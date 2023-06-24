@@ -1,0 +1,125 @@
+#################################################
+#
+# jestインストール
+#
+#################################################
+> npm install --save-dev jest
+
+added 256 packages, and audited 371 packages in 25s
+
+42 packages are looking for funding
+  run `npm fund` for details
+
+2 vulnerabilities (1 moderate, 1 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+
+
+
+#################################################
+#
+# package-json 追記
+#
+#################################################
+
+{
+  .
+  .
+  .
+  "scripts": {
+    "test": "jest"
+  }
+}
+
+
+#################################################
+#
+# テスト実行 / 成功時ログ
+#
+#################################################
+> npm test
+
+> test
+> jest
+
+ PASS  tests/lib/models/conversations.test.js
+node:internal/process/promises:288
+            triggerUncaughtException(err, true /* fromPromise */);
+            ^
+
+[Error: ENOENT: no such file or directory, mkdir 'C:\Users\USER\Documents\Repository\study-club\web\data\tests'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: 'C:\\Users\\USER\\Documents\\Repository\\study-club\\web\\data\\tests'
+}
+
+Node.js v18.15.0
+ PASS  tests/lib/models/common.test.js
+  ● Console
+
+    console.log
+      TypeError 2023/06/25 00:58:23 Cannot convert undefined or null to object
+
+      at log (lib/models/common.js:58:17)
+
+    console.log
+      TypeError 2023/06/25 00:58:23 Cannot convert undefined or null to object
+
+      at log (lib/models/common.js:58:17)
+
+
+Test Suites: 2 passed, 2 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        2.219 s
+Ran all test suites.
+
+
+
+
+#################################################
+#
+# テスト実行 / 失敗時ログ
+#
+#################################################
+> npm test
+
+> test
+> jest
+
+ PASS  tests/lib/models/conversations.test.js
+ FAIL  tests/lib/models/common.test.js
+  ● Console
+
+    console.log
+      TypeError 2023/06/25 01:01:09 Cannot convert undefined or null to object
+
+      at log (lib/models/common.js:58:17)
+
+  ● Error case › fetch 2
+
+    expect(jest.fn()).toBeCalled()
+
+    Expected number of calls: >= 1
+    Received number of calls:    0
+
+      172 |     expect(data).toMatchObject({});
+      173 |     // expect(log).toBe("AA");
+    > 174 |     expect(spy2).toBeCalled();
+          |                  ^
+      175 |     // expect(spy2.mock.calls[0][0]).toBe();
+      176 |
+      177 |
+
+      at Object.toBeCalled (tests/lib/models/common.test.js:174:18)
+
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       1 failed, 4 passed, 5 total
+Snapshots:   0 total
+Time:        2.042 s
+Ran all test suites.

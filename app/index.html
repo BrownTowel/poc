@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+  <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+  <style>
+  ::-webkit-scrollbar{ width: 6px; }
+  ::-webkit-scrollbar-track{ background-color: #ccc; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb{ background-color: #9b4dca; border-radius: 10px; }
+  .message-field { height:50vh; overflow-y: scroll; list-style: none; }
+  .message-field > .message-block > .conversation { display: inline-block; max-width: 80%; margin: 0 1rem;}
+  .message-field > .message-block > .conversation > .sender-label { display: flex; align-items: baseline; }
+  .message-field > .message-block > .conversation > .sender-label > .send-datetime { margin-left: 1rem; font-size: .8em; }
+  .message-field > .message-block > .conversation > .content { border: 1px solid #9b4dca;padding: 0.8rem 1.1rem; border-radius: 8px; display: inline-block;}
+  .message-field > .my.message-block { text-align: end; }
+  .message-field > .my.message-block > .conversation > .sender-label { justify-content: flex-end; margin-right: .5em; }
+  .message-field > .my.message-block > .conversation > .content{ background-color: #d3e6f8; border-color: #0f81e4; text-align: left; }
+  .separator { text-align: center; }
+  .separator > .separator-tag { border: 1px solid #918e8e; padding: 0.15em 0.6em; border-radius: 8px; background: #8c8c8c; color: #fbf7f7; font-size: .95em; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="video-field">
+      <div id="video-screen"></div>
+      <div>
+        <label style="width:20%;">USER<input id="user" name="user" value="A"></label>
+        <button id="connect">接続</button>
+        <button id="disconnect" class="button-outline">切断</button>
+      </div>
+    </div>
+    <form name="myform">
+      <textarea name="text"></textarea>
+      <button name="btn">送信</button>
+    </form>
+    <hr>
+    <!-- <ul id="message" class="message-field" style="height:30vh; overflow-y: scroll; list-style: none;"> -->
+    <ul id="message" class="message-field">
+      <!--
+      <li id="1000" class="my message-block">
+        <div class="conversation">
+          <div class="sender-label">
+            <div class="sender-name">y.tonomura</div>
+            <div class="send-datetime">4/11 23:14</div>
+          </div>
+          <div class="content">HELLO!HOW ARE YOU?</div>
+        </div>
+      </li>
+      <li id="1001" class="message-block">
+        <div class="separator"><span class="separator-tag">今日</span></div>
+        <div class="conversation">
+          <div class="sender-label">
+            <div class="sender-name">d.miyahara</div>
+            <div class="send-datetime">4/12 23:24</div>
+          </div>
+          <div class="content">I'm fine</div>
+        </div>
+      </li>
+      -->
+    </ul>
+  </div>
+
+  <script>
+    var HOST = "ws://localhost:3000";
+    var OPTIONS = {
+      withCredentials: true,
+      extraHeaders: {
+        "my-custom-header": "abcd"
+      }
+    };
+
+    var VIDEO = "video";
+    var VIDEO_KILL = "video_kill";
+    var CHAT = "chat";
+    var FETCH = "fetch"
+
+    var CURSOR = -1;
+    var DURING_DISPLAY_OLDEST_DATE = new Date();
+
+    var USER = document.getElementById("user").value;
+    document.getElementById("user").addEventListener("input", e => {
+      USER = e.data
+    });
+  </script>
+
+  <script>
+    const socket = io(HOST, OPTIONS);
+
+    socket.emit(FETCH, CURSOR);
+
+    document.getElementById("message").addEventListener("scroll", e => {
+
+      const { scrollTop } = e.target;
+
+      if ( !scrollTop && CURSOR > 0 ) {
+
+        socket.emit(FETCH, CURSOR);
+      }
+    });
+
+    /**
+     * socket.emit.eventListener
+    */
+    const form = document.forms.myform;
+    form.btn.addEventListener("click", emitChat);
+
+    const connect = document.getElementById("connect");
+    connect.addEventListener("click", emitVideo);
+
+    const disconnect = document.getElementById("disconnect");
+    disconnect.addEventListener("click", emitVideoKill);
+    /**
+     * socket.emit.event
+    */
+    function emitChat(e) {
+
+      e.preventDefault();
+
+      const content = form.text.value;
+      const user = USER;
+
+      socket.emit(CHAT, { user: user, content: content });
+
+      form.text.value = '';
+
+      return true;
+    };
+    function emitVideo() {
+
+      // socket.emit(VIDEO, `connect ${USER}`);
+
+      return true;
+    };
+    function emitVideoKill() {
+
+      socket.emit(VIDEO_KILL, `disconnect ${USER}`);
+
+      return true;
+    };
+
+    /**
+     * socket.on
+    */
+    socket.on(CHAT, onChat);
+    socket.on(FETCH, onFetch);
+    socket.on(VIDEO, onVideo);
+    socket.on(VIDEO_KILL, onVideoKill);
+    /**
+     * socket.on.eventListener
+    */
+    function onChat(response) {
+
+      const { status, data } = response;
+
+      if (!status) {
+
+        window.alert("メッセージの送信に失敗しました");
+
+        return false;
+      }
+
+      console.log(data);
+
+      document.getElementById("message").appendChild( createConversationBlock( data ) );
+
+      return true;
+    };
+    function onFetch(response) {
+
+      const scroll_into_view = CURSOR < 0 ? false : true
+
+      const message = document.getElementById("message");
+
+      const conversations = JSON.parse(response);
+
+      let count = conversations.length;
+
+      for (const conversation of conversations) {
+
+        const first_child = message.firstChild;
+
+        message.insertBefore( createConversationBlock( conversation ), first_child );
+
+        if (--count === 0) {
+
+          CURSOR = parseInt(conversation.id, 10)
+        }
+      }
+
+      if (!scroll_into_view) {
+
+        message.scrollTo(0, message.scrollHeight);
+      }
+
+      return true;
+    }
+    function onVideo() {
+      console.log("onVideo");
+    }
+    function onVideoKill() {
+      console.log("onVideoKill");
+    }
+
+    /**/
+    function createConversationBlock(data) {
+
+      const isMyBlock = USER === data.user;
+
+      const [ yyyy, mm, dd, hh24, mi, ss ] = explode_date(data.created_at);
+
+      const li = document.createElement("li");
+
+      li.id = data.id;
+      li.classList.add(...isMyBlock ? ["my", "message-block"] : ["message-block"]);
+
+      const sender = isMyBlock ? "" : data.user;
+
+
+      let date = "";
+
+      const d = new Date();
+
+      if  ( lower_than_during_display_older_date( yyyy, mm, dd ) ) {
+
+        date = `${ parseInt(mm, 10) }/${ parseInt(dd, 10) }`;
+
+        DURING_DISPLAY_OLDEST_DATE = new Date(
+          parseInt(yyyy, 10),
+          parseInt(mm, 10),
+          parseInt(dd, 10)
+        )
+
+      } else if (
+        d.getFullYear() === parseInt(yyyy, 10) &&
+        ( d.getMonth() + 1 ) === parseInt(mm, 10) &&
+        d.getDate() === parseInt(dd, 10)
+      ) {
+        date = `今日`;
+      }
+
+
+      if ( date !== "" ) {
+
+        li.innerHTML = `
+        <div class="separator"><span class="separator-tag">${date}</span></div>
+        `
+      } else {
+
+        li.innerHTML = ``;
+      }
+
+      li.innerHTML += `
+      <div class="conversation">
+        <div class="sender-label">
+          <div class="sender-name">${sender}</div>
+          <div class="send-datetime">${ hh24 }:${ mi }</div>
+        </div>
+        <div class="content">${data.content}</div>
+      </div>
+      `
+
+      return li;
+    }
+
+    function explode_date(str) {
+
+      const yyyy = str.slice(0, 4);
+      const mm = str.slice(4, 6);
+      const dd = str.slice(6, 8);
+      const hh24 = str.slice(8, 10);
+      const mi = str.slice(10, 12);
+      const ss = str.slice(12, 14);
+
+      return [ yyyy, mm, dd, hh24, mi, ss ];
+    }
+
+    function lower_than_during_display_older_date(yyyy, mm, dd) {
+      const date = new Date(
+        parseInt(yyyy, 10),
+        parseInt(mm, 10),
+        parseInt(dd, 10)
+      )
+
+      const year1 = DURING_DISPLAY_OLDEST_DATE.getFullYear();
+      const month1 = DURING_DISPLAY_OLDEST_DATE.getMonth() + 1;
+      const day1 = DURING_DISPLAY_OLDEST_DATE.getDate();
+
+      const year2 = date.getFullYear();
+      const month2 = date.getMonth();
+      const day2 = date.getDate();
+
+      if (year1 === year2) {
+
+          return month1 === month2 ?
+                  day1 > day2 :
+                  month1 > month2;
+      }
+
+      return year1 > year2;
+    }
+
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "async-lock": "^1.4.0",
+    "date-utils": "^1.2.21",
+    "dotenv": "^16.0.3",
+    "peer": "^1.0.0",
+    "socket.io": "^4.6.1"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}

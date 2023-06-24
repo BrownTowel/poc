@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+  <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div id="parse" style="white-space: pre;"></div>
+  </div>
+
+  <script>
+
+/**
+ * 正規表現チェッカー
+ * https://www-creators.com/tool/regex-checker
+ * 正規表現サンプル集
+ * https://www.megasoft.co.jp/mifes/seiki/
+ */
+const TOKEN = {
+  id: 0,
+  parent: null,
+  type: '',
+  content: ''
+};
+
+const TEXT = "text";
+
+const PRE = {
+  type: "pre",
+  rgx: /^`{3}/
+  // rgx: /^`{3}( |\r|\n)/
+}
+
+const STRONG = {
+  type: "strong",
+  rgx: /\*\*(.*?)\*\*/
+};
+
+
+const NOTIONS = [PRE, STRONG]
+
+
+function get_token (parent = null, id = null, name = null, content = '') {
+
+  if ( typeof parent !== "object" ) {
+
+    return null;
+  }
+
+  const token = structuredClone( TOKEN );
+
+  if (!parent) {
+
+    token.type = "root";
+
+    return token;
+  }
+
+  token.parent = parent;
+  token.id = id;
+  token.type = name;
+  token.content = content;
+
+
+  return token;
+};
+
+
+function init () {
+
+  return get_token();
+};
+
+function tokenize() {}
+
+
+function parse(row) {
+
+  const tokens = [];
+
+  let parent = init();
+
+  let id = parent.id;
+
+  while (row.length) {
+
+    NOTIONS.forEach(notion => {
+
+      const type = notion.type;
+      const rgx = notion.rgx;
+
+      const m = row.match(rgx);
+
+      id += 1;
+
+      if (m) {
+
+        token = get_token(parent, id, type);
+
+        tokens.push(token);
+
+        row = row.replace(m[0], '');
+
+        parent = token;
+
+        /* 再帰 */
+
+      } else {
+
+        tokens.push( get_token(parent, id, TEXT, row) );
+
+        row = '';
+
+      }
+
+    });
+
+  }
+
+
+  return tokens;
+
+};
+
+
+const structure = raw => {
+
+  const rows = raw.split(/\r\n|\r|\n/);
+
+  return rows.map(row => parse(row));
+}
+
+const test_text = `\
+Hello
+Chat
+\`\`\`
+code block
+\`\`\`\
+`;
+
+const parel = document.getElementById("parse");
+parel.innerHTML = test_text;
+
+const result = structure(test_text);
+
+console.log("Result *******************");
+console.log( result);
+console.log( JSON.stringify(result) );
+console.log("**************************");
+
+</script>
+
+</body>
+
+</html>

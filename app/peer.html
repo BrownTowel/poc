@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div class="container">
+    <button id="btn">SWITCH BACKGROUND</button>
+    <div>
+      <video id="self"></video><canvas id="canvas" class="output_canvas" width="1280px" height="720px"></canvas>
+      <video id="other"></video>
+    </div>
+  </div>
+
+  <script>
+    const HOST = "localhost"
+    const SERVER_PORT = 9000
+
+    const options = {
+      host: HOST,
+      port: SERVER_PORT,
+      path: "video"
+    }
+
+    const peer = new Peer("self", options);
+
+    console.log("peer", peer);
+
+    const self = document.getElementById("self");
+
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false,
+    }).then(stream => {
+      self.srcObject = stream;
+      self.play()
+    }).catch(e => {
+      console.log(e)
+    })
+
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false,
+    }).then(stream => {
+      peer.call("other",stream)
+    }).catch(e => {
+      console.log(e)
+    })
+
+    const peer2 = new Peer("other", options);
+
+    const other = document.getElementById("other")
+
+    peer2.on("call", function (call) {
+      call.answer();
+      call.on("stream", stream => {
+        other.srcObject = stream;
+        other.play();
+      });
+    });
+
+    // // シグナリングサーバとの接続確立時にopenイベントが発生
+    // peer.on('open', function(id){
+    //   navigator.mediaDevices.getUserMedia({video: true, audio: true}, function(stream) {
+    //     var call = peer.call('another-peers-id', stream);
+    //     call.on('stream', function(remoteStream) {
+    //       console.log("送信");
+    //       // 受け取ったストリームをvideoタグなどへ出力する処理を記載
+    //     });
+    //   }, function(error) {
+    //     // ローカルストリーム取得失敗時の処理を記載
+    //     console.log(error);
+    //   });
+    // });
+
+    // // 他のWebブラウザからの受信時にcallイベントが発生
+    // peer.on('call', function(call){
+    //   navigator.mediaDevices.getUserMedia({video: true, audio: true}, function(stream) {
+    //     call.answer(stream);
+    //     call.on('stream', function(remoteStream) {
+    //       console.log("受信");
+    //       // 受け取ったストリームをvideoタグなどへ出力する処理を記載
+    //     });
+    //   }, function(error) {
+    //     // ローカルストリーム取得失敗時の処理を記載
+    //     console.log(error);
+    //   });
+    // });
+
+    const btn = document.getElementById("btn");
+
+    btn.addEventListener("click", () => {
+      const video = document.getElementById("self");
+      const canvas = document.getElementById("canvas");
+
+      video.width = canvas.width = video.videoWidth;
+      video.height = canvas.height = video.videoHeight;
+
+      const canvasCtx = canvas.getContext('2d');
+
+      console.log(canvasCtx);
+    })
+
+  </script>
+
+</body>
+
+</html>

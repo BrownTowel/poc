@@ -1,0 +1,48 @@
+# 起動
+node server.js
+
+
+> npm install --save socket.io
+
+added 21 packages in 4s
+
+> npm install --save dotenv
+
+added 1 package, and audited 23 packages in 733ms
+
+found 0 vulnerabilities
+
+> npm install --save date-utils
+
+added 1 package, and audited 24 packages in 1s
+
+found 0 vulnerabilities
+
+> npm install --save async-lock
+
+added 1 package, and audited 25 packages in 1s
+
+found 0 vulnerabilities
+
+> npm install --save peer
+
+added 90 packages, and audited 115 packages in 6s
+
+13 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> npm install --save-dev jest
+
+added 256 packages, and audited 371 packages in 25s
+
+42 packages are looking for funding
+  run `npm fund` for details
+
+2 vulnerabilities (1 moderate, 1 high)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.

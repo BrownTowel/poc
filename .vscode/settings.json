@@ -1,0 +1,48 @@
+{
+  // エディター上での空白文字の表示方法
+  "editor.renderWhitespace": "all",
+  // 列に選を表示
+  // "editor.rulers": [40, 80, 120],
+  "editor.rulers": [80, 120],
+  // 1つのタブに相当する半角スペースの数
+  "editor.tabSize": 2,
+
+  // ファイル保存時に最終行以降の空行を削除
+  "files.trimFinalNewlines": true,
+  // ファイル保存時に各行の末尾にある半角スペースを削除
+  "files.trimTrailingWhitespace": true,
+  // 検索ビューの検索結果に行数を併記
+  "search.showLineNumbers": true,
+  // ファイルアイコンテーマ
+  "workbench.iconTheme": "vscode-great-icons",
+  // Emmet の候補を表示
+  "emmet.showSuggestionsAsSnippets": true,
+  // TAB キーで Emmet を展開
+  "emmet.triggerExpansionOnTab": true,
+  // emmetで自動補完
+  "emmet.variables": {
+    "lang": "ja"
+  },
+
+  //配色を設定
+  "workbench.colorCustomizations": {
+    // ホバー時のリスト/ツリーの背景
+    "list.hoverBackground": "#474747",
+    //アクティビティバーの背景色
+    "activityBar.border": "#ffffff",
+  },
+  // "editor.minimap.enabled": false, // ミニマップを非表示にする
+  "editor.renderControlCharacters": true, // 制御文字を表示する
+  "editor.suggestSelection": "first", // サジェスト一覧の初期表示項目設定
+  "breadcrumbs.enabled": true, // ファイルのパンくずリストを表示する
+  "files.insertFinalNewline": true, // ファイルの末尾を改行で終わらせる
+  "editor.fontFamily": "'Fira Code', Hasklig, Consolas, 'Courier New', monospace",
+  "editor.fontLigatures": true, // 合字を有効化
+  "editor.renderLineHighlight": "all", // 選択行の行番号をハイライトする
+  "editor.cursorBlinking": "smooth", // カーソルが滑らかに点滅するように
+  "editor.cursorSmoothCaretAnimation": "on", // カーソルの点滅をアニメーション表示する
+  // "editor.cursorStyle": "block", // カーソルの外観をブロックに変更
+  "files.autoGuessEncoding": true, // ファイルの自動エンコードを実施
+  "window.zoomLevel": 0, // 画面全体の表示サイズはデフォルト
+  "editor.bracketPairColorization.enabled": true // 括弧の対応を色付ける
+}
